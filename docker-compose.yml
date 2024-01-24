@@ -1,0 +1,40 @@
+version: '3.4'
+
+services:
+  boiler.server:
+    image: ${DOCKER_REGISTRY-}boilerserver
+    container_name: boilerserver
+    restart: always
+    build:
+      context: .
+      dockerfile: Boiler.Server/Dockerfile
+    ports:
+        - "7017:7017"
+        - "8081:8081"
+    environment:
+      - ASPNETCORE_URLS=https://+:7017;https://+:8081
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=Kolotoc!_25
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/localhost.pfx
+    volumes:
+      - /home/containers/https:/https:ro
+    networks:
+      - temperature_network
+
+  temperaturedb:
+    image: postgres:latest
+    container_name: temperaturedb
+    restart: always
+    environment:
+      POSTGRES_USER: temperature_admin
+      POSTGRES_PASSWORD: kufr2013
+      POSTGRES_DB: temperature
+    volumes:
+      - /home/containers/temperaturedb:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - temperature_network
+
+networks:
+  temperature_network:
+    driver: bridge
